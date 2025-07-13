@@ -1,4 +1,4 @@
-import { ActionRow, Application, ApplicationWindow, Banner, ButtonRow, Clamp, ComboRow, ExpanderRow, HeaderBar, PreferencesDialog, PreferencesGroup, PreferencesPage, SpinRow, SwitchRow, Toggle, ToggleGroup, ToolbarView } from "./adw.ts";
+import { ActionRow, Application, ApplicationWindow, Banner, ButtonRow, Clamp, ComboRow, ExpanderRow, HeaderBar, PreferencesDialog, PreferencesGroup, PreferencesPage, Spinner, SpinRow, SwitchRow, Toggle, ToggleGroup, ToolbarView } from "./adw.ts";
 import { GtkStringList } from "./gtk4.ts";
 
 new Application("com.example.MyApp")
@@ -38,6 +38,7 @@ new Application("com.example.MyApp")
                     .add(new PreferencesGroup()
                         .setProperty("title", "My Preferences")
                         .setProperty("description", "This is a description of my preferences group.")
+                        .setHeaderSuffix(new Spinner())
                         .add(new ActionRow()
                             .setProperty("title", "Properties")
                             .setProperty("title-selectable", true)

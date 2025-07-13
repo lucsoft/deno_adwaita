@@ -380,6 +380,11 @@ export const adwaita = Deno.dlopen("/opt/homebrew/lib/libadwaita-1.dylib", {
         ],
         result: "pointer" // returns a pointer to a new AdwBanner
     },
+
+    adw_spinner_new: {
+        parameters: [],
+        result: "pointer" // returns a pointer to a new AdwSpinner
+    }
 });
 
 console.log("Adwaita version:", `${adwaita.symbols.adw_get_major_version()}.` + adwaita.symbols.adw_get_minor_version() + "." + adwaita.symbols.adw_get_micro_version());
@@ -627,7 +632,6 @@ export class ExpanderRow extends PreferencesRow {
 export class EntryRow extends PreferencesRow {
     constructor(internalPointer: Deno.PointerValue = adwaita.symbols.adw_entry_row_new()) {
         super(internalPointer);
-        gtk4.symbols.gtk_widget_init_template(this.internalPointer);
     }
 
     signalActivated(callback: (self: this) => void) {
@@ -754,5 +758,11 @@ export class Banner extends GtkWidget {
     onButtonClicked(callback: (self: this) => void) {
         this.connect("button-clicked", new DefaultHandler(() => callback(this)));
         return this;
+    }
+}
+
+export class Spinner extends GtkWidget {
+    constructor(internalPointer: Deno.PointerValue = adwaita.symbols.adw_spinner_new()) {
+        super(internalPointer);
     }
 }
