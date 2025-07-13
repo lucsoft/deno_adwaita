@@ -1,14 +1,30 @@
-import { ActionRow, Application, ApplicationWindow, ButtonRow, ComboRow, ExpanderRow, HeaderBar, PreferencesDialog, PreferencesGroup, PreferencesPage, SpinRow, SwitchRow, ToolbarView } from "./adw.ts";
+import { ActionRow, Application, ApplicationWindow, ButtonRow, Clamp, ComboRow, ExpanderRow, HeaderBar, PreferencesDialog, PreferencesGroup, PreferencesPage, SpinRow, SwitchRow, Toggle, ToggleGroup, ToolbarView } from "./adw.ts";
 import { GtkStringList } from "./gtk4.ts";
 
 new Application("com.example.MyApp")
     .signalActivate((gtk) => {
         let counter = 0;
+
         ApplicationWindow.create(gtk)
             .setProperty("title", "My GTK4 Application")
             .setDefaultSize(800, 600)
             .setChild(new ToolbarView()
                 .addTopBar(new HeaderBar())
+                .addTopBar(new Clamp()
+                    .setChild(new ToggleGroup()
+                        .add(new Toggle()
+                            .setProperty("name", "Enable Feature")
+                            .setProperty("label", "Enable Feature")
+                            .setProperty("icon-name", "preferences-desktop-notifications-symbolic")
+                            .setProperty("tooltip", "Toggle this feature on or off.")
+                        )
+                        .add(new Toggle()
+                            .setProperty("name", "Enable Another Feature")
+                            .setProperty("label", "Enable Another Feature")
+                            .setProperty("icon-name", "preferences-desktop-screensaver-symbolic")
+                            .setProperty("tooltip", "Toggle another feature on or off.")
+                        ))
+                )
                 .setContent(new PreferencesPage()
                     .setProperty("title", "My Preferences Page")
                     .setProperty("icon-name", "preferences-system-symbolic")

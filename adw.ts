@@ -86,6 +86,13 @@ export const adwaita = Deno.dlopen("/opt/homebrew/lib/libadwaita-1.dylib", {
         ],
         result: "void" // no return value
     },
+    adw_preferences_group_set_header_suffix: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // child widget pointer
+        ],
+        result: "void" // no return value
+    },
 
     adw_preferences_row_new: {
         parameters: [],
@@ -95,6 +102,27 @@ export const adwaita = Deno.dlopen("/opt/homebrew/lib/libadwaita-1.dylib", {
     adw_action_row_new: {
         parameters: [],
         result: "pointer" // returns a pointer to a new AdwActionRow
+    },
+    adw_action_row_add_prefix: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // child widget pointer
+        ],
+        result: "void" // no return value
+    },
+    adw_action_row_add_suffix: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // child widget pointer
+        ],
+        result: "void" // no return value
+    },
+    adw_action_row_remove: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // child widget pointer
+        ],
+        result: "void" // no return value
     },
 
     adw_button_row_new: {
@@ -302,7 +330,37 @@ export const adwaita = Deno.dlopen("/opt/homebrew/lib/libadwaita-1.dylib", {
             "pointer" // instance pointer
         ],
         result: "void" // no return value
-    }
+    },
+
+    adw_toggle_group_new: {
+        parameters: [],
+        result: "pointer" // returns a pointer to a new AdwToggleGroup
+    },
+    adw_toggle_group_add: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // toggle pointer
+        ],
+        result: "void" // no return value
+    },
+    adw_toggle_group_remove: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // toggle pointer
+        ],
+        result: "void" // no return value
+    },
+    adw_toggle_group_remove_all: {
+        parameters: [
+            "pointer" // instance pointer
+        ],
+        result: "void" // no return value
+    },
+
+    adw_toggle_new: {
+        parameters: [],
+        result: "pointer" // returns a pointer to a new AdwToggle
+    },
 });
 
 console.log("Adwaita version:", `${adwaita.symbols.adw_get_major_version()}.` + adwaita.symbols.adw_get_minor_version() + "." + adwaita.symbols.adw_get_micro_version());
@@ -426,6 +484,11 @@ export class PreferencesGroup extends GtkWidget {
         adwaita.symbols.adw_preferences_group_remove(this.internalPointer, child.internalPointer);
         return this;
     }
+
+    setHeaderSuffix(child: GtkWidget) {
+        adwaita.symbols.adw_preferences_group_set_header_suffix(this.internalPointer, child.internalPointer);
+        return this;
+    }
 }
 
 export class PreferencesRow extends GtkWidget {
@@ -446,6 +509,21 @@ export class ActionRow extends PreferencesRow {
 
     signalActivate(callback: (self: this) => void) {
         this.connect("activate", new DefaultHandler(() => callback(this)));
+        return this;
+    }
+
+    addSuffix(child: GtkWidget) {
+        adwaita.symbols.adw_action_row_add_suffix(this.internalPointer, child.internalPointer);
+        return this;
+    }
+
+    addPrefix(child: GtkWidget) {
+        adwaita.symbols.adw_action_row_add_prefix(this.internalPointer, child.internalPointer);
+        return this;
+    }
+
+    remove(child: GtkWidget) {
+        adwaita.symbols.adw_action_row_remove(this.internalPointer, child.internalPointer);
         return this;
     }
 }
@@ -608,6 +686,33 @@ export class PreferencesDialog extends Dialog {
 
     popSubpage() {
         adwaita.symbols.adw_preferences_dialog_pop_subpage(this.internalPointer);
+        return this;
+    }
+}
+
+export class Toggle extends GtkWidget {
+    constructor(internalPointer: Deno.PointerValue = adwaita.symbols.adw_toggle_new()) {
+        super(internalPointer);
+    }
+}
+
+export class ToggleGroup extends GtkWidget {
+    constructor(internalPointer: Deno.PointerValue = adwaita.symbols.adw_toggle_group_new()) {
+        super(internalPointer);
+    }
+
+    add(toggle: Toggle) {
+        adwaita.symbols.adw_toggle_group_add(this.internalPointer, toggle.internalPointer);
+        return this;
+    }
+
+    remove(toggle: Toggle) {
+        adwaita.symbols.adw_toggle_group_remove(this.internalPointer, toggle.internalPointer);
+        return this;
+    }
+
+    removeAll() {
+        adwaita.symbols.adw_toggle_group_remove_all(this.internalPointer);
         return this;
     }
 }
