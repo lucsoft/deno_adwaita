@@ -1,4 +1,4 @@
-import { ActionRow, Application, ApplicationWindow, ButtonRow, Clamp, ComboRow, ExpanderRow, HeaderBar, PreferencesDialog, PreferencesGroup, PreferencesPage, SpinRow, SwitchRow, Toggle, ToggleGroup, ToolbarView } from "./adw.ts";
+import { ActionRow, Application, ApplicationWindow, Banner, ButtonRow, Clamp, ComboRow, ExpanderRow, HeaderBar, PreferencesDialog, PreferencesGroup, PreferencesPage, SpinRow, SwitchRow, Toggle, ToggleGroup, ToolbarView } from "./adw.ts";
 import { GtkStringList } from "./gtk4.ts";
 
 new Application("com.example.MyApp")
@@ -28,6 +28,13 @@ new Application("com.example.MyApp")
                 .setContent(new PreferencesPage()
                     .setProperty("title", "My Preferences Page")
                     .setProperty("icon-name", "preferences-system-symbolic")
+                    .setBanner(new Banner("Welcome to My Preferences Page")
+                        .setProperty("revealed", true)
+                        .setProperty("button-label", "Learn More")
+                        .onButtonClicked(() => {
+                            console.log("Banner button clicked!");
+                        })
+                    )
                     .add(new PreferencesGroup()
                         .setProperty("title", "My Preferences")
                         .setProperty("description", "This is a description of my preferences group.")

@@ -67,6 +67,13 @@ export const adwaita = Deno.dlopen("/opt/homebrew/lib/libadwaita-1.dylib", {
         ],
         result: "void" // no return value
     },
+    adw_preferences_page_set_banner: {
+        parameters: [
+            "pointer", // instance pointer of AdwPreferencesPage
+            "pointer"  // banner widget pointer
+        ],
+        result: "void" // no return value
+    },
 
     adw_preferences_group_new: {
         parameters: [],
@@ -361,6 +368,18 @@ export const adwaita = Deno.dlopen("/opt/homebrew/lib/libadwaita-1.dylib", {
         parameters: [],
         result: "pointer" // returns a pointer to a new AdwToggle
     },
+
+    adw_status_page_new: {
+        parameters: [],
+        result: "pointer" // returns a pointer to a new AdwStatusPage
+    },
+
+    adw_banner_new: {
+        parameters: [
+            "buffer" // title
+        ],
+        result: "pointer" // returns a pointer to a new AdwBanner
+    },
 });
 
 console.log("Adwaita version:", `${adwaita.symbols.adw_get_major_version()}.` + adwaita.symbols.adw_get_minor_version() + "." + adwaita.symbols.adw_get_micro_version());
@@ -466,6 +485,11 @@ export class PreferencesPage extends GtkWidget {
 
     scrollToTop() {
         adwaita.symbols.adw_preferences_page_scroll_to_top(this.internalPointer);
+        return this;
+    }
+
+    setBanner(banner: Banner) {
+        adwaita.symbols.adw_preferences_page_set_banner(this.internalPointer, banner.internalPointer);
         return this;
     }
 }
@@ -713,6 +737,22 @@ export class ToggleGroup extends GtkWidget {
 
     removeAll() {
         adwaita.symbols.adw_toggle_group_remove_all(this.internalPointer);
+        return this;
+    }
+}
+export class StatusPage extends GtkWidget {
+    constructor(internalPointer: Deno.PointerValue = adwaita.symbols.adw_status_page_new()) {
+        super(internalPointer);
+    }
+}
+
+export class Banner extends GtkWidget {
+    constructor(title: string, internalPointer: Deno.PointerValue = adwaita.symbols.adw_banner_new(cString(title))) {
+        super(internalPointer);
+    }
+
+    onButtonClicked(callback: (self: this) => void) {
+        this.connect("button-clicked", new DefaultHandler(() => callback(this)));
         return this;
     }
 }
