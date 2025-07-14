@@ -7,7 +7,9 @@ export const gobject = Deno.dlopen("/opt/homebrew/lib/libgobject-2.0.dylib", {
             "pointer", // instance pointer
             "buffer",  // signal name
             "function", // callback
-            "pointer"  // user data
+            "pointer",  // user data
+            "function", // destroy callback
+            "i32"       // connect flags
         ],
         result: "pointer", // actually returns a handler id, a pointer-sized integer
     },
@@ -188,7 +190,7 @@ export class GObject {
     }
 
     connect(signal: string, callback: AnyGCallback, userData?: Deno.PointerValue): Deno.PointerValue {
-        return gobject.symbols.g_signal_connect_data(this.internalPointer, cString(signal), callback.pointer, userData ?? null);
+        return gobject.symbols.g_signal_connect_data(this.internalPointer, cString(signal), callback.pointer, userData ?? null, null, 0);
     }
 
     setProperty(propertyName: string, value: AnyGValue) {
