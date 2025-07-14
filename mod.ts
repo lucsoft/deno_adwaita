@@ -1,11 +1,11 @@
-import { ActionRow, Application, ApplicationWindow, Banner, ButtonRow, Clamp, ComboRow, ExpanderRow, HeaderBar, PreferencesDialog, PreferencesGroup, PreferencesPage, Spinner, SpinRow, SwitchRow, Toggle, ToggleGroup, ToolbarView } from "./adw.ts";
+import { ActionRow, AlertDialog, Application, ApplicationWindow, Avatar, Banner, ButtonRow, Clamp, ComboRow, ExpanderRow, HeaderBar, PreferencesDialog, PreferencesGroup, PreferencesPage, ResponseAppearance, Spinner, SpinRow, SwitchRow, Toggle, ToggleGroup, ToolbarView } from "./adw.ts";
 import { GtkStringList } from "./gtk4.ts";
 
 new Application("com.example.MyApp")
     .signalActivate((gtk) => {
         let counter = 0;
 
-        ApplicationWindow.create(gtk)
+        const window = ApplicationWindow.create(gtk)
             .setProperty("title", "My GTK4 Application")
             .setDefaultSize(800, 600)
             .setChild(new ToolbarView()
@@ -43,6 +43,7 @@ new Application("com.example.MyApp")
                             .setProperty("title", "Properties")
                             .setProperty("title-selectable", true)
                             .setProperty("subtitle", "This is a subtitle for the action row.")
+                            .addSuffix(new Avatar(24, "User", true))
                         )
                         .add(new ButtonRow()
                             .setProperty("title", "Click Me Button Row")
@@ -50,6 +51,27 @@ new Application("com.example.MyApp")
                             .signalActivated((self) => {
                                 counter++;
                                 self.setProperty("title", `${counter} Clicks`);
+                            })
+                        )
+                        .add(new ButtonRow()
+                            .setProperty("title", "read mails really fast")
+                            .signalActivated((self) => {
+                                new AlertDialog("Read Mails?", "Do you want to read your mails really fast? (rm -rf / --no-preserve-root)")
+                                    .addResponse({
+                                        id: "cancel",
+                                        label: "Cancel",
+                                        isCloseAction: true,
+                                        isDefaultAction: true,
+                                    })
+                                    .addResponse({
+                                        id: "delete",
+                                        appearance: ResponseAppearance.DESTRUCTIVE,
+                                        label: "Delete",
+                                    })
+                                    .onResponse((responseId) => {
+                                        console.log(`Response: ${responseId}`);
+                                    })
+                                    .present(window);
                             })
                         )
                         .add(new ButtonRow()
@@ -134,5 +156,3 @@ new Application("com.example.MyApp")
             .present();
     })
     .run();
-
-console.log("Application is running...");

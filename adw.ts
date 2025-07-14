@@ -1,5 +1,5 @@
-import { AnyGValue, DefaultHandler } from "./gobj.ts";
-import { gtk4, GtkAdjustment, GtkApplication, GtkApplicationWindow, GtkWidget } from "./gtk4.ts";
+import { AnyGValue, DefaultHandler, GCallback } from "./gobj.ts";
+import { gtk4, GtkAdjustment, GtkApplication, GtkApplicationWindow, GtkLayoutManager, GtkPaintable, GtkWidget } from "./gtk4.ts";
 import { gio } from "./libs.ts";
 import { cString } from "./utils.ts";
 
@@ -384,6 +384,109 @@ export const adwaita = Deno.dlopen("/opt/homebrew/lib/libadwaita-1.dylib", {
     adw_spinner_new: {
         parameters: [],
         result: "pointer" // returns a pointer to a new AdwSpinner
+    },
+
+    adw_avatar_new: {
+        parameters: [
+            // int size
+            "i32", // size of the avatar
+            "buffer", // text
+            "bool" // show initials
+        ],
+        result: "pointer" // returns a pointer to a new AdwAvatar
+    },
+    adw_avatar_set_custom_image: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // GdkPaintable pointer
+        ],
+        result: "void" // no return value
+    },
+
+    adw_alert_dialog_new: {
+        parameters: [
+            "buffer", // title
+            "buffer"  // body text
+        ],
+        result: "pointer" // returns a pointer to a new AdwAlertDialog
+    },
+    adw_alert_dialog_add_response: {
+        parameters: [
+            "pointer", // instance pointer
+            "buffer",  // response label
+            "buffer"   // response id
+        ],
+        result: "void" // no return value
+    },
+    adw_alert_dialog_set_response_appearance: {
+        parameters: [
+            "pointer", // instance pointer
+            "buffer",  // response id
+            "i32"      // appearance type
+        ],
+        result: "void" // no return value
+    },
+    adw_alert_dialog_set_default_response: {
+        parameters: [
+            "pointer", // instance pointer
+            "buffer"   // response id
+        ],
+        result: "void" // no return value
+    },
+    adw_alert_dialog_set_close_response: {
+        parameters: [
+            "pointer", // instance pointer
+            "buffer"   // response id
+        ],
+        result: "void" // no return value
+    },
+
+    adw_wrap_box_new: {
+        parameters: [],
+        result: "pointer" // returns a pointer to a new AdwWrapBox
+    },
+    adw_wrap_box_append: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // child widget pointer
+        ],
+        result: "void" // no return value
+    },
+
+    adw_wrap_layout_new: {
+        parameters: [],
+        result: "pointer" // returns a pointer to a new AdwWrapLayout
+    },
+
+    adw_bin_new: {
+        parameters: [],
+        result: "pointer" // returns a pointer to a new AdwBin
+    },
+    adw_bin_set_child: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // child widget pointer
+        ],
+        result: "void" // no return value
+    },
+
+    adw_breakpoint_bin_new: {
+        parameters: [],
+        result: "pointer" // returns a pointer to a new AdwBreakpointBin
+    },
+    adw_breakpoint_bin_set_child: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // child widget pointer
+        ],
+        result: "void" // no return value
+    },
+    adw_breakpoint_bin_add_breakpoint: {
+        parameters: [
+            "pointer", // instance pointer
+            "i32"      // breakpoint value
+        ],
+        result: "void" // no return value
     }
 });
 
@@ -766,3 +869,115 @@ export class Spinner extends GtkWidget {
         super(internalPointer);
     }
 }
+
+export class Avatar extends GtkWidget {
+    constructor(size: number, text: string, showInitials: boolean = true, internalPointer: Deno.PointerValue = adwaita.symbols.adw_avatar_new(size, cString(text), showInitials)) {
+        super(internalPointer);
+    }
+
+    setCustomImage(paintable: GtkPaintable) {
+        adwaita.symbols.adw_avatar_set_custom_image(this.internalPointer, paintable.internalPointer);
+        return this;
+    }
+};
+
+export enum ResponseAppearance {
+    DEFAULT = 0,
+    SUGGESTED = 1,
+    DESTRUCTIVE = 2,
+}
+
+export interface Response {
+    id: string;
+    label: string;
+    appearance?: ResponseAppearance;
+    isCloseAction?: boolean;
+    isDefaultAction?: boolean;
+}
+
+export class AlertDialog extends Dialog {
+    #responses = new Map<string, Response>();
+    constructor(title?: string, bodyText?: string, internalPointer: Deno.PointerValue = adwaita.symbols.adw_alert_dialog_new(title ? cString(title) : null, bodyText ? cString(bodyText) : null)) {
+        super(internalPointer);
+    }
+
+    addResponse(response: Response) {
+        if (this.#responses.has(response.id)) {
+            throw new Error(`Response with id "${response.id}" already exists.`);
+        }
+        this.#responses.set(response.id, response);
+        adwaita.symbols.adw_alert_dialog_add_response(this.internalPointer, cString(response.id), cString(response.label));
+        if (response.appearance !== undefined) {
+            adwaita.symbols.adw_alert_dialog_set_response_appearance(this.internalPointer, cString(response.id), response.appearance);
+        }
+        if (response.isDefaultAction) {
+            adwaita.symbols.adw_alert_dialog_set_default_response(this.internalPointer, cString(response.id));
+        }
+        if (response.isCloseAction) {
+            adwaita.symbols.adw_alert_dialog_set_close_response(this.internalPointer, cString(response.id));
+        }
+        return this;
+    }
+
+    onResponse(callback: (responseId: string) => void) {
+        this.connect("response", new GCallback({
+            parameters: [
+                "pointer", // instance pointer
+                "buffer",   // response id
+                "pointer" // user data (not used here)
+            ],
+            result: "void", // no return value
+        }, (_, responseId) => {
+            if (responseId === null) return;
+            callback(new Deno.UnsafePointerView(responseId).getCString());
+        }));
+        return this;
+    }
+}
+
+export class WrapLayout extends GtkLayoutManager {
+    constructor(internalPointer: Deno.PointerValue = adwaita.symbols.adw_wrap_layout_new()) {
+        super(internalPointer);
+    }
+}
+
+export class WrapBox extends GtkWidget {
+    constructor(internalPointer: Deno.PointerValue = adwaita.symbols.adw_wrap_box_new()) {
+        super(internalPointer);
+    }
+
+    append(child: GtkWidget) {
+        adwaita.symbols.adw_wrap_box_append(this.internalPointer, child.internalPointer);
+        return this;
+    }
+}
+
+export class Bin extends GtkWidget {
+    constructor(internalPointer: Deno.PointerValue = adwaita.symbols.adw_bin_new()) {
+        super(internalPointer);
+    }
+
+    setChild(child: GtkWidget) {
+        adwaita.symbols.adw_bin_set_child(this.internalPointer, child.internalPointer);
+        return this;
+    }
+}
+// export class Breakpoint extends GObject
+// {
+
+// }
+// export class BreakpointBin extends GtkWidget {
+//     constructor(internalPointer: Deno.PointerValue = adwaita.symbols.adw_breakpoint_bin_new()) {
+//         super(internalPointer);
+//     }
+
+//     setChild(child: GtkWidget) {
+//         adwaita.symbols.adw_breakpoint_bin_set_child(this.internalPointer, child.internalPointer);
+//         return this;
+//     }
+
+//     addBreakpoint(breakpoint: Breakpoint) {
+//         adwaita.symbols.adw_breakpoint_bin_add_breakpoint(this.internalPointer, breakpoint);
+//         return this;
+//     }
+//  }

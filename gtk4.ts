@@ -100,11 +100,20 @@ export const gtk4 = Deno.dlopen("/opt/homebrew/lib/libgtk-4.dylib", {
         ],
         result: "pointer" // returns a pointer to a new GtkAdjustment
     },
+
     gtk_widget_init_template: {
         parameters: [
             "pointer" // instance pointer
         ],
         result: "void" // no return value
+    },
+
+    gdk_paintable_new_empty: {
+        parameters: [
+            "i32", // width
+            "i32"  // height
+        ],
+        result: "pointer" // returns a pointer to a new GdkPaintable
     }
 });
 
@@ -194,4 +203,18 @@ export class GtkAdjustment extends GObject {
     constructor(value: number, lower: number, upper: number, stepIncrement: number, pageIncrement: number, pageSize: number) {
         super(gtk4.symbols.gtk_adjustment_new(value, lower, upper, stepIncrement, pageIncrement, pageSize));
     }
+}
+
+export class GtkPaintable extends GObject {
+    constructor(internalPointer: Deno.PointerValue = gtk4.symbols.gdk_paintable_new_empty(0, 0)) {
+        super(internalPointer);
+    }
+
+    static createEmpty(width: number, height: number) {
+        return new GtkPaintable(gtk4.symbols.gdk_paintable_new_empty(width, height));
+    }
+}
+
+export class GtkLayoutManager extends GObject {
+
 }
