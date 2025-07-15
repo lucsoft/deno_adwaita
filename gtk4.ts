@@ -53,6 +53,13 @@ export const gtk4 = Deno.dlopen("/opt/homebrew/lib/libgtk-4.dylib", {
         ],
         result: "pointer" // returns a pointer to a new GtkBox
     },
+    gtk_box_set_baseline_position: {
+        parameters: [
+            "pointer", // instance pointer
+            "i32"      // baseline position (0 for top, 1 for center, 2 for bottom)
+        ],
+        result: "void" // no return value
+    },
     gtk_box_append: {
         parameters: [
             "pointer", // instance pointer
@@ -114,6 +121,13 @@ export const gtk4 = Deno.dlopen("/opt/homebrew/lib/libgtk-4.dylib", {
             "i32"  // height
         ],
         result: "pointer" // returns a pointer to a new GdkPaintable
+    },
+
+    gtk_button_new_with_label: {
+        parameters: [
+            "buffer" // button label
+        ],
+        result: "pointer" // returns a pointer to a new GtkButton
     }
 });
 
@@ -161,6 +175,13 @@ export class GtkLabel extends GtkWidget {
         super(gtk4.symbols.gtk_label_new(cString(text)));
     }
 }
+
+export enum GtkBaselinePosition {
+    TOP = 0,
+    CENTER = 1,
+    BOTTOM = 2,
+}
+
 export class GtkBox extends GtkWidget {
     constructor(orientation: GtkOrientation, spacingInPixel: number = 0) {
         super(gtk4.symbols.gtk_box_new(orientation, spacingInPixel));
@@ -168,6 +189,11 @@ export class GtkBox extends GtkWidget {
 
     append(child: GtkWidget) {
         gtk4.symbols.gtk_box_append(this.internalPointer, child.internalPointer);
+        return this;
+    }
+
+    setBaselinePosition(position: GtkBaselinePosition) {
+        gtk4.symbols.gtk_box_set_baseline_position(this.internalPointer, position);
         return this;
     }
 }
@@ -179,6 +205,7 @@ export class GtkListBox extends GtkWidget {
 
     append(child: GtkWidget) {
         gtk4.symbols.gtk_list_box_append(this.internalPointer, child.internalPointer);
+        return this;
     }
 }
 
@@ -217,4 +244,10 @@ export class GtkPaintable extends GObject {
 
 export class GtkLayoutManager extends GObject {
 
+}
+
+export class GtkButton extends GtkWidget {
+    constructor(label: string, internalPointer: Deno.PointerValue = gtk4.symbols.gtk_button_new_with_label(cString(label))) {
+        super(internalPointer);
+    }
 }

@@ -189,8 +189,9 @@ export class GObject {
         }
     }
 
-    connect(signal: string, callback: AnyGCallback, userData?: Deno.PointerValue): Deno.PointerValue {
-        return gobject.symbols.g_signal_connect_data(this.internalPointer, cString(signal), callback.pointer, userData ?? null, null, 0);
+    connect(signal: string, callback: AnyGCallback, userData?: Deno.PointerValue) {
+        gobject.symbols.g_signal_connect_data(this.internalPointer, cString(signal), callback.pointer, userData ?? null, null, 0);
+        return this;
     }
 
     setProperty(propertyName: string, value: AnyGValue) {

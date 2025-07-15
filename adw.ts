@@ -487,6 +487,103 @@ export const adwaita = Deno.dlopen("/opt/homebrew/lib/libadwaita-1.dylib", {
             "i32"      // breakpoint value
         ],
         result: "void" // no return value
+    },
+
+    adw_navigation_view_new: {
+        parameters: [],
+        result: "pointer" // returns a pointer to a new AdwNavigationView
+    },
+    adw_navigation_view_add: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // page pointer
+        ],
+        result: "void" // no return value
+    },
+    adw_navigation_view_push: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // page pointer
+        ],
+        result: "void" // no return value
+    },
+    adw_navigation_view_pop: {
+        parameters: [
+            "pointer" // instance pointer
+        ],
+        result: "void" // no return value
+    },
+    adw_navigation_view_remove: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // page pointer
+        ],
+        result: "void" // no return value
+    },
+    adw_navigation_view_push_by_tag: {
+        parameters: [
+            "pointer", // instance pointer
+            "buffer"   // tag
+        ],
+        result: "void" // no return value
+    },
+    adw_navigation_page_new: {
+        parameters: [
+            "pointer", // child
+            "buffer" // title
+        ],
+        result: "pointer" // returns a pointer to a new AdwNavigationPage
+    },
+    adw_navigation_page_new_with_tag: {
+        parameters: [
+            "pointer", // child
+            "buffer",  // title
+            "buffer"   // tag
+        ],
+        result: "pointer" // returns a pointer to a new AdwNavigationPage with a tag
+    },
+
+    adw_navigation_split_view_new: {
+        parameters: [],
+        result: "pointer" // returns a pointer to a new AdwNavigationSplitView
+    },
+    adw_navigation_split_view_set_content: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // content widget pointer
+        ],
+        result: "void" // no return value
+    },
+    adw_navigation_split_view_set_sidebar: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // sidebar widget pointer
+        ],
+        result: "void" // no return value
+    },
+
+    adw_overlay_split_view_new: {
+        parameters: [],
+        result: "pointer" // returns a pointer to a new AdwOverlaySplitView
+    },
+    adw_overlay_split_view_set_sidebar: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // sidebar widget pointer
+        ],
+        result: "void" // no return value
+    },
+    adw_overlay_split_view_set_content: {
+        parameters: [
+            "pointer", // instance pointer
+            "pointer"  // content widget pointer
+        ],
+        result: "void" // no return value
+    },
+
+    adw_view_switcher_new: {
+        parameters: [],
+        result: "pointer" // returns a pointer to a new AdwViewSwitcher
     }
 });
 
@@ -981,3 +1078,78 @@ export class Bin extends GtkWidget {
 //         return this;
 //     }
 //  }
+
+export class NavigationView extends GtkWidget {
+    constructor(internalPointer: Deno.PointerValue = adwaita.symbols.adw_navigation_view_new()) {
+        super(internalPointer);
+    }
+
+    add(page: NavigationPage) {
+        adwaita.symbols.adw_navigation_view_add(this.internalPointer, page.internalPointer);
+        return this;
+    }
+
+    push(page: NavigationPage) {
+        adwaita.symbols.adw_navigation_view_push(this.internalPointer, page.internalPointer);
+        return this;
+    }
+
+    pop() {
+        adwaita.symbols.adw_navigation_view_pop(this.internalPointer);
+        return this;
+    }
+
+    remove(page: NavigationPage) {
+        adwaita.symbols.adw_navigation_view_remove(this.internalPointer, page.internalPointer);
+        return this;
+    }
+
+    pushByTag(tag: string) {
+        adwaita.symbols.adw_navigation_view_push_by_tag(this.internalPointer, cString(tag));
+        return this;
+    }
+}
+
+export class NavigationPage extends GtkWidget {
+    constructor(child: GtkWidget, title: string, tag?: string, internalPointer: Deno.PointerValue = tag ? adwaita.symbols.adw_navigation_page_new_with_tag(child.internalPointer, cString(title), cString(tag)) : adwaita.symbols.adw_navigation_page_new(child.internalPointer, cString(title))) {
+        super(internalPointer);
+    }
+}
+
+export class NavigationSplitView extends GtkWidget {
+    constructor(internalPointer: Deno.PointerValue = adwaita.symbols.adw_navigation_split_view_new()) {
+        super(internalPointer);
+    }
+
+    setContent(content: NavigationPage) {
+        adwaita.symbols.adw_navigation_split_view_set_content(this.internalPointer, content.internalPointer);
+        return this;
+    }
+
+    setSidebar(sidebar: NavigationPage) {
+        adwaita.symbols.adw_navigation_split_view_set_sidebar(this.internalPointer, sidebar.internalPointer);
+        return this;
+    }
+}
+
+export class OverlaySplitView extends GtkWidget {
+    constructor(internalPointer: Deno.PointerValue = adwaita.symbols.adw_overlay_split_view_new()) {
+        super(internalPointer);
+    }
+
+    setSidebar(sidebar: NavigationPage) {
+        adwaita.symbols.adw_overlay_split_view_set_sidebar(this.internalPointer, sidebar.internalPointer);
+        return this;
+    }
+
+    setContent(content: NavigationPage) {
+        adwaita.symbols.adw_overlay_split_view_set_content(this.internalPointer, content.internalPointer);
+        return this;
+    }
+}
+
+export class ViewSwitcher extends GtkWidget {
+    constructor(internalPointer: Deno.PointerValue = adwaita.symbols.adw_view_switcher_new()) {
+        super(internalPointer);
+    }
+}
