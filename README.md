@@ -2,8 +2,9 @@
 
 <img src=".github/screenshot.png" style="display: block;margin: 0 auto;">
 
-> **Note**
-> This library provides [Deno](https://deno.com/) bindings to [libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/) and [GTK4](https://www.gtk.org/docs/) using Deno's [Foreign Function Interface (FFI)](https://docs.deno.com/runtime/fundamentals/ffi/). It enables building native GNOME-style UIs in TypeScript.
+> **Note** This library provides [Deno](https://deno.com/) bindings to [libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/) and
+> [GTK4](https://www.gtk.org/docs/) using Deno's [Foreign Function Interface (FFI)](https://docs.deno.com/runtime/fundamentals/ffi/). It
+> enables building native GNOME-style UIs in TypeScript.
 
 ## About
 
