@@ -193,6 +193,18 @@ export const gtk4 = Deno.dlopen(
             ],
             result: "buffer", // returns a buffer containing a list of icon names, separated by nulls
         },
+        gtk_icon_theme_lookup_icon: {
+            parameters: [
+                "pointer", // instance pointer
+                "buffer", // icon name
+                "pointer", // fallbacks
+                "i32", // size
+                "i32", // scale
+                "i32", // direction
+                "i32", // flags
+            ],
+            result: "pointer", // returns a pointer to a GtkIconInfo
+        },
 
         gtk_grid_new: {
             parameters: [],
@@ -221,12 +233,67 @@ export const gtk4 = Deno.dlopen(
             ],
             result: "void", // no return value
         },
+
+        gtk_picture_new: {
+            parameters: [],
+            result: "pointer", // returns a pointer to a new GtkPicture
+        },
+        gtk_picture_new_for_paintable: {
+            parameters: [
+                "pointer", // paintable pointer
+            ],
+            result: "pointer", // returns a pointer to a new GtkPicture
+        },
+        gtk_picture_new_for_filename: {
+            parameters: [
+                "buffer", // file path
+            ],
+            result: "pointer", // returns a pointer to a new GtkPicture
+        },
+
+        gtk_css_provider_new: {
+            parameters: [],
+            result: "pointer", // returns a pointer to a new GtkCssProvider
+        },
+        gtk_css_provider_load_from_string: {
+            parameters: [
+                "pointer", // instance pointer
+                "buffer", // CSS string
+            ],
+            result: "void", // no return value
+        },
+        gtk_css_provider_load_from_path: {
+            parameters: [
+                "pointer", // instance pointer
+                "buffer", // file path
+            ],
+            result: "void", // no return value
+        },
     },
 );
+
+export enum GtkTextDirection {
+    NONE = 0,
+    LTR = 1,
+    RTL = 2,
+}
 
 export enum GtkOrientation {
     VERTICAL = 0,
     HORIZONTAL = 1,
+}
+
+export enum GtkBaselinePosition {
+    TOP = 0,
+    CENTER = 1,
+    BOTTOM = 2,
+}
+
+export enum GtkContentFit {
+    FILL = 0,
+    CONTAIN = 1,
+    COVER = 2,
+    SCALE_DOWN = 3,
 }
 
 export class GtkWidget extends GInitiallyUnowned {
@@ -312,12 +379,6 @@ export class GtkLabel extends GtkWidget {
     constructor(text: string) {
         super(gtk4.symbols.gtk_label_new(cString(text)));
     }
-}
-
-export enum GtkBaselinePosition {
-    TOP = 0,
-    CENTER = 1,
-    BOTTOM = 2,
 }
 
 export class GtkBox extends GtkWidget {
@@ -427,6 +488,10 @@ export class GdkDisplay extends GObject {
     constructor(public override internalPointer: Deno.PointerValue = gtk4.symbols.gdk_display_get_default()) {
         super(internalPointer);
     }
+
+    static getDefault() {
+        return new GdkDisplay();
+    }
 }
 
 export class GtkImage extends GtkWidget {
@@ -447,6 +512,34 @@ export class GtkImage extends GtkWidget {
     }
 }
 
+export class GdkPaintable extends GObject {
+    constructor(internalPointer: Deno.PointerValue) {
+        super(internalPointer);
+    }
+}
+
+export class GtkPicture extends GtkWidget {
+    constructor(internalPointer: Deno.PointerValue = gtk4.symbols.gtk_picture_new()) {
+        super(internalPointer);
+    }
+
+    static fromFile(filePath: string) {
+        return new GtkPicture(
+            gtk4.symbols.gtk_picture_new_for_filename(cString(filePath)),
+        );
+    }
+
+    static fromPaintable(paintable: GdkPaintable) {
+        return new GtkPicture(
+            gtk4.symbols.gtk_picture_new_for_paintable(paintable.internalPointer),
+        );
+    }
+
+    keepAspectRatio() {
+        return this;
+    }
+}
+
 export class GtkIconTheme extends GObject {
     static forDisplay(display: GdkDisplay = new GdkDisplay()) {
         return new GtkIconTheme(
@@ -458,6 +551,40 @@ export class GtkIconTheme extends GObject {
         const buffer = gtk4.symbols.gtk_icon_theme_get_icon_names(this.internalPointer);
         using strv = new GStrv(buffer);
         return strv.toArray();
+    }
+
+    lookupIcon(iconName: string, size: number, scale: number, direction: GtkTextDirection, flags: number) {
+        return new GdkPaintable(gtk4.symbols.gtk_icon_theme_lookup_icon(
+            this.internalPointer,
+            cString(iconName),
+            null, // fallbacks
+            size,
+            scale,
+            direction,
+            flags,
+        ));
+    }
+}
+
+export class GtkCssProvider extends GObject {
+    constructor(internalPointer: Deno.PointerValue = gtk4.symbols.gtk_css_provider_new()) {
+        super(internalPointer);
+    }
+
+    loadFromString(css: string) {
+        gtk4.symbols.gtk_css_provider_load_from_string(
+            this.internalPointer,
+            cString(css),
+        );
+        return this;
+    }
+
+    loadFromPath(path: string) {
+        gtk4.symbols.gtk_css_provider_load_from_path(
+            this.internalPointer,
+            cString(path),
+        );
+        return this;
     }
 }
 

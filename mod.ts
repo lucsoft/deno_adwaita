@@ -21,13 +21,15 @@ import {
     SwitchRow,
     ToolbarView,
 } from "./adw.ts";
-import { GtkBox, GtkButton, GtkCenterBox, GtkGrid, GtkIconTheme, GtkImage, GtkLabel, GtkOrientation, GtkStringList } from "./gtk4.ts";
+import { GtkBox, GtkButton, GtkGrid, GtkIconTheme, GtkLabel, GtkOrientation, GtkPicture, GtkStringList, GtkTextDirection } from "./gtk4.ts";
 
 new Application("com.example.MyApp")
     .signalActivate((gtk) => {
         let counter = 0;
 
-        const icons = GtkIconTheme.forDisplay().getIconNames().map((icons) => GtkImage.fromIconName(icons));
+        const icons = GtkIconTheme.forDisplay().getIconNames().map((icons) =>
+            GtkIconTheme.forDisplay().lookupIcon(icons, 48, 2, GtkTextDirection.NONE, 0)
+        );
 
         const propertiesPages = new PreferencesPage()
             .setProperty("title", "My Preferences Page")
@@ -267,12 +269,18 @@ new Application("com.example.MyApp")
                                     (() => {
                                         const grid = new GtkGrid();
                                         grid.setProperty("row-spacing", 10);
-                                        grid.setProperty("column-spacing", 10);
-                                        grid.setProperty("margin", 10);
+                                        grid.setProperty("column-spacing", 5);
+                                        grid.setProperty("column-homogeneous", true);
                                         for (const [index, icon] of icons.entries()) {
-                                            grid.attach(icon, index % 10, Math.floor(index / 10), 1, 1);
+                                            grid.attach(
+                                                GtkPicture.fromPaintable(icon).setProperty("vexpand", true).setProperty("valign", 0),
+                                                index % 10,
+                                                Math.floor(index / 10),
+                                                1,
+                                                1,
+                                            );
                                         }
-                                        return new GtkCenterBox().setCenterWidget(grid).setMarginTop(30);
+                                        return grid.setMarginTop(30);
                                     })(),
                                 )
                                 .add(

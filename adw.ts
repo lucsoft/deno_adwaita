@@ -657,6 +657,16 @@ export class ApplicationWindow extends GtkApplicationWindow {
         );
         return this;
     }
+
+    signalCloseRequest(callback: (self: this) => void) {
+        this.connect(
+            "close-request",
+            new DefaultHandler(() => {
+                callback(this);
+            }),
+        );
+        return this;
+    }
 }
 
 export class ToolbarView extends GtkWidget {

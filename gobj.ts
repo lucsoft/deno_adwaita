@@ -102,6 +102,12 @@ export const gobject = Deno.dlopen(
             ],
             result: "void", // no return value
         },
+        g_object_unref: {
+            parameters: [
+                "pointer", // GObject pointer
+            ],
+            result: "void", // no return value
+        },
     },
 );
 
@@ -266,6 +272,9 @@ export class GObject {
         return this;
     }
 
+    [Symbol.dispose]() {
+        gobject.symbols.g_object_unref(this.internalPointer);
+    }
     // getProperty<Type extends GType>(propertyName: string, type: Type): GTypeValue<Type> {
     //     const value = gvalue.init(type);
     //     gobject.symbols.g_object_get_property(this.internalPointer, cString(propertyName), value.internalPointer);
