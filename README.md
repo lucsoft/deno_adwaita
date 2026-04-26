@@ -12,6 +12,13 @@
 - Business logic and application code remain in TypeScript, while rendering and system integration are managed natively.
 - Suitable for developers who want to create desktop applications with a GNOME look and feel, without writing C or Rust.
 
+## Usage
+
+### macOS
+
+1. brew install libadwaita
+2. DYLD_LIBRARY_PATH=/opt/homebrew/lib deno run -A mod.ts
+
 ### References
 
 - [Deno FFI Documentation](https://docs.deno.com/runtime/fundamentals/ffi/)

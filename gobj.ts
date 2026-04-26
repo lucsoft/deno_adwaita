@@ -147,7 +147,7 @@ type GTypeValue<Type extends GType> = Type extends GType.String ? string
 
 export class GValue<Type extends GType> {
     public internalPointer: Deno.PointerValue;
-    private buffer: Uint8Array;
+    private buffer: Uint8Array<ArrayBuffer>;
     constructor(private type: Type) {
         this.buffer = new Uint8Array(gvalue.byteSize);
         this.internalPointer = Deno.UnsafePointer.of(this.buffer);
