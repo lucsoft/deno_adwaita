@@ -1,4 +1,4 @@
-import { GInitiallyUnowned, GObject } from "./gobj.ts";
+import { GInitiallyUnowned, GObject, GStrv } from "./gobj.ts";
 import { cString, os } from "./utils.ts";
 
 export const gtk4 = Deno.dlopen(
@@ -117,13 +117,33 @@ export const gtk4 = Deno.dlopen(
             ],
             result: "void", // no return value
         },
-
-        gdk_paintable_new_empty: {
+        gtk_widget_set_margin_top: {
             parameters: [
-                "i32", // width
-                "i32", // height
+                "pointer", // instance pointer
+                "i32", // margin in pixels
             ],
-            result: "pointer", // returns a pointer to a new GdkPaintable
+            result: "void", // no return value
+        },
+        gtk_widget_set_margin_bottom: {
+            parameters: [
+                "pointer", // instance pointer
+                "i32", // margin in pixels
+            ],
+            result: "void", // no return value
+        },
+        gtk_widget_set_margin_start: {
+            parameters: [
+                "pointer", // instance pointer
+                "i32", // margin in pixels
+            ],
+            result: "void", // no return value
+        },
+        gtk_widget_set_margin_end: {
+            parameters: [
+                "pointer", // instance pointer
+                "i32", // margin in pixels
+            ],
+            result: "void", // no return value
         },
 
         gtk_button_new_with_label: {
@@ -131,6 +151,75 @@ export const gtk4 = Deno.dlopen(
                 "buffer", // button label
             ],
             result: "pointer", // returns a pointer to a new GtkButton
+        },
+
+        gdk_display_get_default: {
+            parameters: [],
+            result: "pointer", // returns a pointer to the default GdkDisplay
+        },
+
+        gtk_image_new: {
+            parameters: [],
+            result: "pointer", // returns a pointer to a new GtkImage
+        },
+        gtk_image_new_from_paintable: {
+            parameters: [
+                "pointer", // paintable pointer
+            ],
+            result: "pointer", // returns a pointer to a new GtkImage
+        },
+        gtk_image_new_from_icon_name: {
+            parameters: [
+                "buffer",
+            ],
+            result: "pointer", // returns a pointer to a new GtkImage
+        },
+        gtk_image_new_from_file: {
+            parameters: [
+                "buffer", // file path
+            ],
+            result: "pointer", // returns a pointer to a new GtkImage
+        },
+
+        gtk_icon_theme_get_for_display: {
+            parameters: [
+                "pointer", // display pointer
+            ],
+            result: "pointer", // returns a pointer to a GtkIconTheme
+        },
+        gtk_icon_theme_get_icon_names: {
+            parameters: [
+                "pointer", // instance pointer
+            ],
+            result: "buffer", // returns a buffer containing a list of icon names, separated by nulls
+        },
+
+        gtk_grid_new: {
+            parameters: [],
+            result: "pointer", // returns a pointer to a new GtkGrid
+        },
+        gtk_grid_attach: {
+            parameters: [
+                "pointer", // instance pointer
+                "pointer", // child widget pointer
+                "i32", // left
+                "i32", // top
+                "i32", // width
+                "i32", // height
+            ],
+            result: "void", // no return value
+        },
+
+        gtk_center_box_new: {
+            parameters: [],
+            result: "pointer", // returns a pointer to a new GtkCenterBox
+        },
+        gtk_center_box_set_center_widget: {
+            parameters: [
+                "pointer", // instance pointer
+                "pointer", // child widget pointer
+            ],
+            result: "void", // no return value
         },
     },
 );
@@ -140,7 +229,41 @@ export enum GtkOrientation {
     HORIZONTAL = 1,
 }
 
-export class GtkWidget extends GInitiallyUnowned {}
+export class GtkWidget extends GInitiallyUnowned {
+    setMarginTop(margin: number) {
+        gtk4.symbols.gtk_widget_set_margin_top(this.internalPointer, margin);
+        return this;
+    }
+
+    setMarginBottom(margin: number) {
+        gtk4.symbols.gtk_widget_set_margin_bottom(this.internalPointer, margin);
+        return this;
+    }
+
+    setMarginStart(margin: number) {
+        gtk4.symbols.gtk_widget_set_margin_start(this.internalPointer, margin);
+        return this;
+    }
+
+    setMarginEnd(margin: number) {
+        gtk4.symbols.gtk_widget_set_margin_end(this.internalPointer, margin);
+        return this;
+    }
+}
+
+export class GtkCenterBox extends GtkWidget {
+    constructor() {
+        super(gtk4.symbols.gtk_center_box_new());
+    }
+
+    setCenterWidget(child: GtkWidget) {
+        gtk4.symbols.gtk_center_box_set_center_widget(
+            this.internalPointer,
+            child.internalPointer,
+        );
+        return this;
+    }
+}
 
 export class GtkApplication extends GtkWidget {}
 
@@ -282,21 +405,59 @@ export class GtkAdjustment extends GObject {
     }
 }
 
-export class GtkPaintable extends GObject {
-    constructor(
-        internalPointer: Deno.PointerValue = gtk4.symbols
-            .gdk_paintable_new_empty(
-                0,
-                0,
-            ),
-    ) {
+export class GtkGrid extends GtkWidget {
+    constructor(internalPointer: Deno.PointerValue = gtk4.symbols.gtk_grid_new()) {
         super(internalPointer);
     }
 
-    static createEmpty(width: number, height: number) {
-        return new GtkPaintable(
-            gtk4.symbols.gdk_paintable_new_empty(width, height),
+    attach(child: GtkWidget, left: number, top: number, width: number, height: number) {
+        gtk4.symbols.gtk_grid_attach(
+            this.internalPointer,
+            child.internalPointer,
+            left,
+            top,
+            width,
+            height,
         );
+        return this;
+    }
+}
+
+export class GdkDisplay extends GObject {
+    constructor(public override internalPointer: Deno.PointerValue = gtk4.symbols.gdk_display_get_default()) {
+        super(internalPointer);
+    }
+}
+
+export class GtkImage extends GtkWidget {
+    constructor(internalPointer: Deno.PointerValue = gtk4.symbols.gtk_image_new()) {
+        super(internalPointer);
+    }
+
+    static fromIconName(iconName: string) {
+        return new GtkImage(
+            gtk4.symbols.gtk_image_new_from_icon_name(cString(iconName)),
+        );
+    }
+
+    static fromFile(filePath: string) {
+        return new GtkImage(
+            gtk4.symbols.gtk_image_new_from_file(cString(filePath)),
+        );
+    }
+}
+
+export class GtkIconTheme extends GObject {
+    static forDisplay(display: GdkDisplay = new GdkDisplay()) {
+        return new GtkIconTheme(
+            gtk4.symbols.gtk_icon_theme_get_for_display(display.internalPointer),
+        );
+    }
+
+    getIconNames() {
+        const buffer = gtk4.symbols.gtk_icon_theme_get_icon_names(this.internalPointer);
+        using strv = new GStrv(buffer);
+        return strv.toArray();
     }
 }
 

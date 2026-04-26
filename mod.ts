@@ -21,11 +21,13 @@ import {
     SwitchRow,
     ToolbarView,
 } from "./adw.ts";
-import { GtkBox, GtkButton, GtkLabel, GtkOrientation, GtkStringList } from "./gtk4.ts";
+import { GtkBox, GtkButton, GtkCenterBox, GtkGrid, GtkIconTheme, GtkImage, GtkLabel, GtkOrientation, GtkStringList } from "./gtk4.ts";
 
 new Application("com.example.MyApp")
     .signalActivate((gtk) => {
         let counter = 0;
+
+        const icons = GtkIconTheme.forDisplay().getIconNames().map((icons) => GtkImage.fromIconName(icons));
 
         const propertiesPages = new PreferencesPage()
             .setProperty("title", "My Preferences Page")
@@ -260,6 +262,18 @@ new Application("com.example.MyApp")
                                                 "settings",
                                             );
                                         }),
+                                )
+                                .add(
+                                    (() => {
+                                        const grid = new GtkGrid();
+                                        grid.setProperty("row-spacing", 10);
+                                        grid.setProperty("column-spacing", 10);
+                                        grid.setProperty("margin", 10);
+                                        for (const [index, icon] of icons.entries()) {
+                                            grid.attach(icon, index % 10, Math.floor(index / 10), 1, 1);
+                                        }
+                                        return new GtkCenterBox().setCenterWidget(grid).setMarginTop(30);
+                                    })(),
                                 )
                                 .add(
                                     new ButtonRow()

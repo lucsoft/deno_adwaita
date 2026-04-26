@@ -1,5 +1,5 @@
 import { AnyGValue, DefaultHandler, GCallback } from "./gobj.ts";
-import { gtk4, GtkAdjustment, GtkApplication, GtkApplicationWindow, GtkLayoutManager, GtkPaintable, GtkWidget } from "./gtk4.ts";
+import { gtk4, GtkAdjustment, GtkApplication, GtkApplicationWindow, GtkImage, GtkLayoutManager, GtkWidget } from "./gtk4.ts";
 import { gio } from "./libs.ts";
 import { cString, os } from "./utils.ts";
 
@@ -1157,7 +1157,7 @@ export class Avatar extends GtkWidget {
         super(internalPointer);
     }
 
-    setCustomImage(paintable: GtkPaintable) {
+    setCustomImage(paintable: GtkImage) {
         adwaita.symbols.adw_avatar_set_custom_image(
             this.internalPointer,
             paintable.internalPointer,
