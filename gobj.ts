@@ -95,6 +95,13 @@ export const gobject = Deno.dlopen(
             ],
             result: "void", // no return value
         },
+
+        g_strfreev: {
+            parameters: [
+                "pointer", // pointer to a NULL-terminated array of strings
+            ],
+            result: "void", // no return value
+        },
     },
 );
 
@@ -205,6 +212,28 @@ export class GValue<Type extends GType> {
     }
 }
 
+export class GStrv {
+    constructor(public internalPointer: Deno.PointerValue) {
+    }
+
+    toArray(): string[] {
+        const view = new Deno.UnsafePointerView(this.internalPointer!);
+        let bufferIndex = 0;
+        const list: string[] = [];
+        while (true) {
+            const addr = view.getBigUint64(bufferIndex * 8);
+            if (addr === 0n) break;
+            const strPtr = Deno.UnsafePointer.create(addr);
+            list.push(new Deno.UnsafePointerView(strPtr!).getCString());
+            bufferIndex++;
+        }
+        return list;
+    }
+
+    [Symbol.dispose]() {
+        gobject.symbols.g_strfreev(this.internalPointer);
+    }
+}
 export class GObject {
     constructor(public internalPointer: Deno.PointerValue) {
         if (this.internalPointer === null) {
